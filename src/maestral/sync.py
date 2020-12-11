@@ -49,6 +49,7 @@ from sqlalchemy import create_engine  # type: ignore
 import pathspec  # type: ignore
 import dropbox  # type: ignore
 from dropbox.files import Metadata, DeletedMetadata, FileMetadata, FolderMetadata  # type: ignore
+from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler  # type: ignore
 from watchdog.events import EVENT_TYPE_CREATED, EVENT_TYPE_DELETED, EVENT_TYPE_MOVED
 from watchdog.events import (
@@ -67,7 +68,7 @@ from watchdog.utils.dirsnapshot import DirectorySnapshot  # type: ignore
 # local imports
 from . import notify
 from .config import MaestralConfig, MaestralState
-from .fsevents import Observer
+from .notify import MaestralDesktopNotifier
 from .constants import (
     IDLE,
     SYNCING,
