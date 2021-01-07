@@ -25,7 +25,7 @@ install_requires = [
     "setuptools",
     "sqlalchemy>=1.3,<1.4",
     "survey>=3.2.2,<4.0",
-    "watchdog>=0.10.0,<=0.10.3",
+    "watchdog@git+https://github.com/CCP-Aporia/watchdog.git@handle-coalesced-fsevents",
 ]
 
 gui_requires = [
