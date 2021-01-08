@@ -181,6 +181,12 @@ class _Ignore:
         self.ttl = ttl
         self.recursive = recursive
 
+    def __repr__(self) -> str:
+        return (
+            f"<{self.__class__.__name__}(event={self.event}, "
+            f"recursive={self.recursive}, ttl={self.ttl})>"
+        )
+
 
 class FSEventHandler(FileSystemEventHandler):
     """A local file event handler
