@@ -296,7 +296,7 @@ def test_folder_tree_created_remote(m):
     # test deleting remote tree
 
     m.client.remove("/sync_tests/nested_folder")
-    wait_for_idle(m, 10)
+    wait_for_idle(m, 15)
 
     assert_synced(m)
     assert_child_count(m, "/sync_tests", 0)

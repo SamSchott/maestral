@@ -124,7 +124,7 @@ def proxy(m):
 # helper functions
 
 
-def wait_for_idle(m: Maestral, minimum: int = 4):
+def wait_for_idle(m: Maestral, minimum: int = 6):
     """Blocks until Maestral instance is idle for at least `minimum` sec."""
 
     t0 = time.time()
