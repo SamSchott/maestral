@@ -51,7 +51,12 @@ import dropbox  # type: ignore
 from dropbox.files import Metadata, DeletedMetadata, FileMetadata, FolderMetadata  # type: ignore
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler  # type: ignore
-from watchdog.events import EVENT_TYPE_CREATED, EVENT_TYPE_DELETED, EVENT_TYPE_MOVED
+from watchdog.events import (
+    EVENT_TYPE_CREATED,
+    EVENT_TYPE_DELETED,
+    EVENT_TYPE_MOVED,
+    EVENT_TYPE_MODIFIED,
+)
 from watchdog.events import (
     DirModifiedEvent,
     FileModifiedEvent,
@@ -196,8 +201,16 @@ class FSEventHandler(FileSystemEventHandler):
     to be uploaded by :meth:`upload_worker`. This acts as a translation layer between
     :class:`watchdog.Observer` and :class:`SyncEngine`.
 
+    White lists of event types to handle are supplied as ``file_event_types`` and
+    ``dir_event_types``. This is for forward compatibility as additional event types
+    may be added to watchdog in the future.
+
     :param syncing: Set when syncing is running.
     :param startup: Set when startup is running.
+    :param file_event_types: Types of file events to handle. This acts as a whitelist.
+        By default, only FileClosedEvents are ignored.
+    :param dir_event_types: Types of directory events to handle. This acts as a
+        whitelist. By default, only DirModifiedEvents are ignored.
 
     :cvar float ignore_timeout: Timeout in seconds after which ignored paths will be
         discarded.
@@ -206,10 +219,28 @@ class FSEventHandler(FileSystemEventHandler):
     _ignored_events: List[_Ignore]
     local_file_event_queue: "Queue[FileSystemEvent]"
 
-    def __init__(self, syncing: Event, startup: Event) -> None:
+    def __init__(
+        self,
+        syncing: Event,
+        startup: Event,
+        file_event_types: Tuple[str, ...] = (
+            EVENT_TYPE_CREATED,
+            EVENT_TYPE_DELETED,
+            EVENT_TYPE_MODIFIED,
+            EVENT_TYPE_MOVED,
+        ),
+        dir_event_types: Tuple[str, ...] = (
+            EVENT_TYPE_CREATED,
+            EVENT_TYPE_DELETED,
+            EVENT_TYPE_MOVED,
+        ),
+    ) -> None:
 
         self.syncing = syncing
         self.startup = startup
+
+        self.file_event_types = file_event_types
+        self.dir_event_types = dir_event_types
 
         self._ignored_events = []
         self.ignore_timeout = 2.0
@@ -318,8 +349,12 @@ class FSEventHandler(FileSystemEventHandler):
         if not (self.syncing.is_set() or self.startup.is_set()):
             return
 
-        # ignore all DirMovedEvents
-        if isinstance(event, DirModifiedEvent):
+        # handle only whitelisted dir event types
+        if event.is_directory and event.event_type not in self.dir_event_types:
+            return
+
+        # handle only whitelisted file event types
+        if not event.is_directory and event.event_type not in self.file_event_types:
             return
 
         # check if event should be ignored
