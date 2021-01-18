@@ -364,7 +364,7 @@ def test_remote_file_replaced_by_folder_and_unsynced_local_changes(m):
 def test_remote_folder_replaced_by_file(m):
     """Tests the download sync when a folder is replaced by a file."""
 
-    os.mkdir(m.test_folder_local + "/folder")
+    m.client.make_dir("/sync_tests/folder")
     wait_for_idle(m)
 
     m.pause_sync()
