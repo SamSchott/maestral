@@ -73,7 +73,6 @@ from watchdog.utils.dirsnapshot import DirectorySnapshot  # type: ignore
 # local imports
 from . import notify
 from .config import MaestralConfig, MaestralState
-from .notify import MaestralDesktopNotifier
 from .constants import (
     IDLE,
     SYNCING,
