@@ -25,7 +25,7 @@ install_requires = [
     "setuptools",
     "sqlalchemy>=1.3,<1.4",
     "survey>=3.2.2,<4.0",
-    "watchdog@git+https://github.com/CCP-Aporia/watchdog",
+    "watchdog@git+https://github.com/gorakhargosh/watchdog",
 ]
 
 gui_requires = [
