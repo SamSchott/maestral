@@ -555,6 +555,8 @@ def start_maestral_daemon(
         traceback.print_exc()
     finally:
 
+        loop.close()
+
         if NOTIFY_SOCKET:
             # notify systemd that we are shutting down
             sd_notifier.notify("STOPPING=1")
