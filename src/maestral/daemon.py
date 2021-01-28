@@ -301,9 +301,9 @@ class Lock:
 # ==== helpers for daemon management ===================================================
 
 
-def _send_term(pid: int) -> None:
+def _send_signal(pid: int, sig: int) -> None:
     try:
-        os.kill(pid, signal.SIGTERM)
+        os.kill(pid, sig)
     except ProcessLookupError:
         pass
 
@@ -645,33 +645,23 @@ def stop_maestral_daemon_process(
 
     pid = get_maestral_pid(config_name)
 
-    try:
-        with MaestralProxy(config_name) as m:
-            m.shutdown_daemon()
-    except CommunicationError:
-        if pid:
-            _send_term(pid)
-    finally:
-        while timeout > 0:
-            if not is_running(config_name):
-                return Stop.Ok
-            else:
-                time.sleep(0.2)
-                timeout -= 0.2
+    if not pid:
+        # cannot send SIGTERM to process if we don't know its pid
+        return Stop.Failed
 
-        # send SIGTERM after timeout and delete PID file
-        if pid:
-            _send_term(pid)
+    _send_signal(pid, signal.SIGTERM)
 
-        time.sleep(1)
-
+    # wait for graceful shutdown
+    while timeout > 0:
         if not is_running(config_name):
             return Stop.Ok
-        elif pid:
-            os.kill(pid, signal.SIGKILL)
-            return Stop.Killed
         else:
-            return Stop.Failed
+            time.sleep(0.2)
+            timeout -= 0.2
+
+    # kill
+    _send_signal(pid, signal.SIGKILL)
+    return Stop.Killed
 
 
 class MaestralProxy:
