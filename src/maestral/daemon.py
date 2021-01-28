@@ -143,6 +143,8 @@ for err_cls in (*SYNC_ERRORS, *GENERAL_ERRORS):
 
 def _get_lockdata() -> Tuple[bytes, str, int]:
 
+    # see cpython/Lib/test/test_fcntl.py
+
     try:
         os.O_LARGEFILE
     except AttributeError:
@@ -150,10 +152,7 @@ def _get_lockdata() -> Tuple[bytes, str, int]:
     else:
         start_len = "qq"
 
-    if (
-        sys.platform.startswith(("netbsd", "freebsd", "openbsd"))
-        or sys.platform == "darwin"
-    ):
+    if sys.platform == "darwin":
         if struct.calcsize("l") == 8:
             off_t = "l"
             pid_t = "i"
@@ -164,14 +163,6 @@ def _get_lockdata() -> Tuple[bytes, str, int]:
         fmt = off_t + off_t + pid_t + "hh"
         pid_index = 2
         lockdata = struct.pack(fmt, 0, 0, 0, fcntl.F_WRLCK, 0)
-    # elif sys.platform.startswith('gnukfreebsd'):
-    #     fmt = 'qqihhi'
-    #     pid_index = 2
-    #     lockdata = struct.pack(fmt, 0, 0, 0, fcntl.F_WRLCK, 0, 0)
-    # elif sys.platform in ('hp-uxB', 'unixware7'):
-    #     fmt = 'hhlllii'
-    #     pid_index = 2
-    #     lockdata = struct.pack(fmt, fcntl.F_WRLCK, 0, 0, 0, 0, 0, 0)
     elif sys.platform.startswith("linux"):
         fmt = "hh" + start_len + "ih"
         pid_index = 4
